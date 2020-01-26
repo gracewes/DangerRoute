@@ -1,9 +1,33 @@
 import requests, json, random
 
-def crash_per_area(t1, t2):
-    lat_1, lng_1 = t1
-    lat_2, lng_2 = t2
-    return random.random()
+from geopy import distance
+
+num_months = 47 # number of months in the dataset
+    
+def crash_per_area(pt1, pt2):
+    """
+    pt1: (lat1, lon1)
+    pt2: (lat2, lon2)
+    
+    returns: number (float) of crashes per square mile within the
+             rectangle made by pt1 and pt2 at opposite corners
+    """
+    lat1, lon1 = pt1
+    lat2, lon2 = pt2
+    
+    bottomLat, topLat = (min(lat1, lat2), max(lat1, lat2))
+    leftLon, rightLon = (min(lon1, lon2), max(lon1, lon2))
+    
+    xDistance = distance.distance((bottomLat, rightLon), (bottomLat, leftLon)).miles
+    yDistance = distance.distance((topLat, leftLon), (bottomLat, leftLon)).miles
+    rectangle_area = xDistance * yDistance
+    
+    data_in_rectangle = data[(data['Start_Lat'] >= bottomLat) & (data['Start_Lat'] <= topLat) & (data['Start_Lng'] >= leftLon) & (data['Start_Lng'] <= rightLon)]
+    
+    num_crashes = data_in_rectangle.shape[0]
+    
+    return num_crashes / rectangle_area / num_months
+
 
 secondsThreshold = 120
 APIKEY = "secret"
