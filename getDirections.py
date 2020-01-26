@@ -4,7 +4,7 @@ from geopy import distance
 
 num_months = 47 # number of months in the dataset
     
-def crash_per_area(pt1, pt2):
+def score_rectangle(pt1, pt2):
     """
     pt1: (lat1, lon1)
     pt2: (lat2, lon2)
@@ -53,6 +53,6 @@ for a in range(len(steps)):
 
 dangerScore = 0
 for b in range(len(stepBounds)):
-    dangerScore += crash_per_area(stepBounds[b][0], stepBounds[b][1])
+    dangerScore += score_rectangle(stepBounds[b][0], stepBounds[b][1])
 
 print(dangerScore)
