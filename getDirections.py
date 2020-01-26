@@ -1,8 +1,12 @@
 import requests, json, random
+import pandas as pd
 
 from geopy import distance
 
 num_months = 47 # number of months in the dataset
+
+US_Accidents_Dec19 = pd.read_csv("US_Accidents_Dec19.csv")
+data = US_Accidents_Dec19[['Start_Time', 'End_Time', 'Start_Lat', 'Start_Lng', 'Street', 'Severity']]
     
 def score_rectangle(pt1, pt2):
     """
@@ -28,22 +32,24 @@ def score_rectangle(pt1, pt2):
     num_crashes = crashes_in_rectangle.shape[0]
     avg_severity = crashes_in_rectangle['Severity'].mean() / 4
     
+    if rectangle_area == 0 or num_crashes == 0:
+        return 0
+
     return num_crashes * avg_severity / rectangle_area / num_months
 
 
 secondsThreshold = 120
-APIKEY = "secret"
-#url = "https://maps.googleapis.com/maps/api/directions/json?origin=Disneyland&destination=Universal+Studios+Hollywood&key=" + APIKEY
-url = "https://maps.googleapis.com/maps/api/directions/json?origin=400+Bizzell+St+TX&destination=Austin+TX+78712&key=" + APIKEY
+
+options = {
+    "origin": "400 Bizzell St TX",
+    "destination": "Austin TX 78712",
+    "key": "secret"
+}
+url = "https://maps.googleapis.com/maps/api/directions/json"
 
 # Using API Request
-response = requests.get(url)
+response = requests.get(url, params=options)
 r = json.loads(response.text)
-
-# Using Dummy Data
-#with open("./exampleResponse.json") as json_file:
-#    response = json.load(json_file)
-#r = response
 
 steps = r["routes"][0]["legs"][0]["steps"]
 stepBounds = []
