@@ -1,7 +1,10 @@
+from flask import Flask, jsonify
 import requests, json, random
 import pandas as pd
 
 from geopy import distance
+
+app = Flask(__name__)
 
 num_months = 47 # number of months in the dataset
 secondsThreshold = 120
@@ -39,6 +42,7 @@ def score_rectangle(pt1, pt2):
     return num_crashes * avg_severity / rectangle_area / num_months
 
 
+@app.route("/<origin>/<destination>")
 def score_trip(origin, destination, waypoints=[]):
     options = {
         "origin": origin,
@@ -47,12 +51,15 @@ def score_trip(origin, destination, waypoints=[]):
         "alternatives": "true",
         "waypoints": waypoints
     }
+    print(origin)
+    print(destination)
     url = "https://maps.googleapis.com/maps/api/directions/json"
     
     # Using API Request
     response = requests.get(url, params=options)
     r = json.loads(response.text)
     
+    score_response = []
     for i in range(len(r["routes"])):
         steps = r["routes"][i]["legs"][0]["steps"]
         stepBounds = []
@@ -63,6 +70,11 @@ def score_trip(origin, destination, waypoints=[]):
         dangerScore = 0
         for b in range(len(stepBounds)):
             dangerScore += score_rectangle(stepBounds[b][0], stepBounds[b][1])
+
+        score_response.append({"route": i, "score": dangerScore})
         
-        print("route {}: {} ({})".format(i, dangerScore, r["routes"][i]["legs"][0]["distance"]["text"]))
+    return jsonify(score_response)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
