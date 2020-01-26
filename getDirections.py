@@ -9,11 +9,12 @@ def crash_per_area(pt1, pt2):
     pt1: (lat1, lon1)
     pt2: (lat2, lon2)
     
-    returns: number (float) of crashes per square mile within the
-             rectangle made by pt1 and pt2 at opposite corners
+    returns: number (float) of crashes per unit area within rectangle
+             made by pt1 and pt2 at opposite corners
     """
     lat1, lon1 = pt1
     lat2, lon2 = pt2
+    #rectangle_area = abs((lat1 - lat2) * (lon1 - lon2))
     
     bottomLat, topLat = (min(lat1, lat2), max(lat1, lat2))
     leftLon, rightLon = (min(lon1, lon2), max(lon1, lon2))
@@ -22,11 +23,12 @@ def crash_per_area(pt1, pt2):
     yDistance = distance.distance((topLat, leftLon), (bottomLat, leftLon)).miles
     rectangle_area = xDistance * yDistance
     
-    data_in_rectangle = data[(data['Start_Lat'] >= bottomLat) & (data['Start_Lat'] <= topLat) & (data['Start_Lng'] >= leftLon) & (data['Start_Lng'] <= rightLon)]
+    crashes_in_rectangle = data[(data['Start_Lat'] >= bottomLat) & (data['Start_Lat'] <= topLat) & (data['Start_Lng'] >= leftLon) & (data['Start_Lng'] <= rightLon)]
     
-    num_crashes = data_in_rectangle.shape[0]
+    num_crashes = crashes_in_rectangle.shape[0]
+    avg_severity = crashes_in_rectangle['Severity'].mean() / 4
     
-    return num_crashes / rectangle_area / num_months
+    return num_crashes * avg_severity / rectangle_area / num_months
 
 
 secondsThreshold = 120
